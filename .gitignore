@@ -1,0 +1,72 @@
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+.pnp
+.pnp.js
+
+# ============================================
+# Build outputs
+# ============================================
+dist/
+.next/
+out/
+build/
+.turbo/
+*.tsbuildinfo
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# ============================================
+# IDE & Editor
+# ============================================
+.idea/
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.vscode/
+
+# ============================================
+# OS
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================
+# Debug & Logs
+# ============================================
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ============================================
+# vSeek internals
+# ============================================
+.vseek/cache/
+.vseek/build/
+.vseek/history/
+
+# ============================================
+# Workspaces — only keep .gitkeep
+# ============================================
+workspaces/*
+!workspaces/.gitkeep
+
+# ============================================
+# App-specific build artifacts
+# ============================================
+apps/*/.next/
+apps/*/dist/
+apps/*/node_modules/
+packages/*/dist/

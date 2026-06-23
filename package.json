@@ -1,0 +1,20 @@
+{
+  "name": "vseek",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local lightweight frontend generation system — a private v0 alternative",
+  "scripts": {
+    "dev": "concurrently -n studio,server -c cyan,green \"pnpm --filter @vseek/studio dev\" \"pnpm --filter @vseek/server dev\"",
+    "dev:studio": "pnpm --filter @vseek/studio dev",
+    "dev:server": "pnpm --filter @vseek/server dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}
