@@ -41,7 +41,11 @@ export const GenerateRequestSchema = z.object({
 
 export const GenerateResponseSchema = z.object({
   projectId: z.string(),
+  projectName: z.string(),
+  description: z.string(),
   files: z.array(GeneratedFileSchema),
+  dependencies: z.array(z.string()),
+  devDependencies: z.array(z.string()),
 });
 
 export const ReviseRequestSchema = z.object({
@@ -61,8 +65,11 @@ export const ReviseResponseSchema = z.object({
 // ---- DeepSeek Output ----
 /** JSON schema that DeepSeek must follow when response_format: { type: "json_object" } */
 export const DeepSeekOutputSchema = z.object({
-  files: z.array(GeneratedFileSchema),
-  explanation: z.string().optional(),
+  projectName: z.string().min(1, "projectName is required"),
+  description: z.string().default(""),
+  files: z.array(GeneratedFileSchema).min(1, "at least one file is required"),
+  dependencies: z.array(z.string()).default([]),
+  devDependencies: z.array(z.string()).default([]),
 });
 
 // ---- Config ----

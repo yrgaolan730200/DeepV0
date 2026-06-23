@@ -1,6 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { loadEnv } from "../lib/env.js";
+import { generateCode } from "../services/deepseek.js";
+import { buildGenerateProjectPrompt } from "../prompts/generate-project.js";
+import {
+  createProjectId,
+  copyTemplateToWorkspace,
+  writeGeneratedFiles,
+} from "../services/workspace.js";
 
 const GenerateBodySchema = z.object({
   prompt: z.string().min(1, "prompt is required"),
@@ -22,31 +29,85 @@ export async function generateRoutes(app: FastifyInstance) {
         });
       }
 
-      const { prompt, projectId: _projectId } = parsed.data;
+      const { prompt } = parsed.data;
 
-      // Check DeepSeek API key (stub for P0.5 — will be enforced in P1)
+      // Check DeepSeek API key
       const env = loadEnv();
-      if (env.DEEPSEEK_API_KEY === "vseek-p0-placeholder") {
-        app.log.info("DEEPSEEK_API_KEY not configured — returning stub response");
+      if (!env.DEEPSEEK_API_KEY || env.DEEPSEEK_API_KEY === "vseek-p0-placeholder") {
+        return reply.status(400).send({
+          error: "DEEPSEEK_API_KEY is not configured",
+        });
       }
 
-      // P0.5: stub — returns mock data, no actual DeepSeek call
-      const projectId = _projectId ?? `proj_${Date.now().toString(36)}`;
+      // Generate projectId
+      const projectId = parsed.data.projectId ?? createProjectId();
 
-      app.log.info({ projectId, prompt: prompt.slice(0, 80) }, "POST /api/generate (stub)");
+      app.log.info({ projectId, prompt: prompt.slice(0, 120) }, "Starting generation");
 
+      // Step 1: Call DeepSeek
+      let generationResult;
+      try {
+        generationResult = await generateCode({
+          prompt,
+          systemPrompt: buildGenerateProjectPrompt(),
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        app.log.error({ err: message }, "DeepSeek generation failed");
+
+        if (message.includes("DEEPSEEK_API_KEY")) {
+          return reply.status(400).send({ error: message });
+        }
+        if (message.includes("invalid JSON") || message.includes("validation failed")) {
+          return reply.status(502).send({
+            error: "DeepSeek returned invalid output",
+            detail: message.slice(0, 500),
+          });
+        }
+        return reply.status(500).send({
+          error: "Generation failed",
+          detail: message,
+        });
+      }
+
+      app.log.info(
+        {
+          projectId,
+          fileCount: generationResult.files.length,
+          projectName: generationResult.projectName,
+        },
+        "DeepSeek generation succeeded"
+      );
+
+      // Step 2: Create workspace and copy template
+      try {
+        await copyTemplateToWorkspace(projectId);
+      } catch (err) {
+        app.log.warn({ err }, "Failed to copy template, continuing with generated files only");
+      }
+
+      // Step 3: Write generated files (overwrites template files)
+      try {
+        await writeGeneratedFiles(projectId, generationResult.files);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        app.log.error({ err: message }, "Failed to write generated files");
+        return reply.status(500).send({
+          error: "Failed to write generated files",
+          detail: message,
+        });
+      }
+
+      app.log.info({ projectId }, "Project files written successfully");
+
+      // Step 4: Return result
       return {
         projectId,
-        files: [
-          {
-            path: "src/app/page.tsx",
-            content: `// P0.5 stub: Generated page for "${prompt.slice(0, 30)}..."\nexport default function Page() {\n  return <div>Hello vSeek!</div>;\n}`,
-          },
-          {
-            path: "src/app/layout.tsx",
-            content: `export default function RootLayout({ children }: { children: React.ReactNode }) {\n  return <html><body>{children}</body></html>;\n}`,
-          },
-        ],
+        projectName: generationResult.projectName,
+        description: generationResult.description,
+        files: generationResult.files,
+        dependencies: generationResult.dependencies,
+        devDependencies: generationResult.devDependencies,
       };
     },
   });

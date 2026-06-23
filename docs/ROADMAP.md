@@ -1,6 +1,6 @@
 # vSeek Roadmap
 
-## P0 — Stable Skeleton (current)
+## P0 — Stable Skeleton ✅
 
 - [x] pnpm workspace monorepo
 - [x] apps/studio UI skeleton (Chat + FileExplorer + CodeEditor + Preview + BuildLog)
@@ -9,18 +9,22 @@
 - [x] templates/next-shadcn base template
 - [x] workspaces/ directory structure
 - [x] docs/ARCHITECTURE.md and ROADMAP.md
-- [ ] Verify: pnpm install + pnpm dev + health check + UI visible
+- [x] P0.5 stabilization: typecheck fixes, route validation, path safety, env strategy
 
-## P1 — Core Generation Loop
+## P1 — Core Generation Loop ✅ (current)
 
-- [ ] System prompt engineering for DeepSeek
-- [ ] `response_format: { type: "json_object" }` integration
-- [ ] POST /api/generate → actual DeepSeek call
-- [ ] POST /api/projects/:id/revise → multi-turn refinement
-- [ ] Workspace file persistence
+- [x] System prompt engineering for DeepSeek
+- [x] `response_format: { type: "json_object" }` integration
+- [x] POST /api/generate → actual DeepSeek call
+- [x] POST /api/projects/:id/revise → multi-turn refinement (revise route stub)
+- [x] Workspace file persistence (copyTemplate + writeGeneratedFiles)
+- [x] ChatPanel wired to real generation
+- [x] FileExplorer shows real generated file tree
+- [x] CodeEditor shows real generated file content
+- [x] Project listing from workspaces/
+- [ ] Multi-turn conversation (ChatPanel state not persisted across sessions)
 - [ ] Code validator (import checks, basic lint)
 - [ ] Three-tier retry loop (generate → validate → fix)
-- [ ] ChatPanel wired to real generation
 
 ## P2 — Live Preview & Compilation
 

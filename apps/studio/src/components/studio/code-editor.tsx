@@ -1,66 +1,44 @@
 "use client";
 
-import { Code } from "lucide-react";
+import { Code, File as FileIcon } from "lucide-react";
 
-// P0: mock code display — static placeholder
-const MOCK_CODE = `"use client";
+interface CodeEditorProps {
+  filePath: string | null;
+  content: string | null;
+}
 
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
-
-const TIERS = [
-  { name: "Free", price: "$0", features: ["5 projects", "Basic support"] },
-  { name: "Pro", price: "$10/mo", features: ["Unlimited projects", "Priority support", "Analytics"], highlight: true },
-  { name: "Enterprise", price: "$30/mo", features: ["SSO", "Custom integrations", "SLA", "Dedicated manager"] },
-];
-
-export default function PricingPage() {
-  return (
-    <section className="container mx-auto py-24">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold tracking-tight">Simple Pricing</h2>
-        <p className="text-muted-foreground mt-2">Choose the plan that fits you</p>
+export function CodeEditor({ filePath, content }: CodeEditorProps) {
+  if (!filePath || content === null) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-2">
+          <Code className="h-4 w-4 text-zinc-400" />
+          <span className="text-xs font-medium text-zinc-300">Editor</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center bg-zinc-950">
+          <div className="text-center space-y-2">
+            <FileIcon className="h-8 w-8 text-zinc-600 mx-auto" />
+            <p className="text-sm text-zinc-500">Select a file to view its content</p>
+            <p className="text-xs text-zinc-600">Generated files appear in the explorer above</p>
+          </div>
+        </div>
       </div>
-      <div className="grid gap-8 md:grid-cols-3">
-        {TIERS.map((tier) => (
-          <Card key={tier.name} className={tier.highlight ? "border-primary" : ""}>
-            <CardHeader>
-              <CardTitle>{tier.name}</CardTitle>
-              <Badge variant="secondary">{tier.price}</Badge>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {tier.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm">
-                    <Check className="h-4 w-4 text-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className="mt-6 w-full" variant={tier.highlight ? "default" : "outline"}>
-                Get Started
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
-  );
-}`;
+    );
+  }
 
-export function CodeEditor() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-2">
         <Code className="h-4 w-4 text-zinc-400" />
         <span className="text-xs font-medium text-zinc-300">Editor</span>
-        <span className="ml-auto text-xs text-zinc-600">page.tsx</span>
+        <span className="text-xs text-zinc-500 ml-2 font-mono">{filePath}</span>
+        <span className="ml-auto text-xs text-zinc-600">
+          {content.split("\n").length} lines
+        </span>
       </div>
       <div className="flex-1 overflow-auto bg-zinc-950 p-4">
         <pre className="text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre">
-          <code>{MOCK_CODE}</code>
+          <code>{content}</code>
         </pre>
       </div>
     </div>

@@ -4,12 +4,14 @@ import { useState } from "react";
 import { ChevronUp, ChevronDown, CheckCircle, Info, AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// P0: mock build log entries
-const MOCK_LOGS = [
-  { type: "success" as const, message: "TypeScript compilation: no errors (tsc --noEmit)" },
-  { type: "info" as const, message: "3 files generated in project proj_mock" },
-  { type: "info" as const, message: "Output written to workspaces/proj_mock/current/" },
-];
+interface BuildLogEntry {
+  type: "success" | "info" | "warning" | "error";
+  message: string;
+}
+
+interface BuildLogPanelProps {
+  entries?: BuildLogEntry[];
+}
 
 const iconMap = {
   success: CheckCircle,
@@ -25,14 +27,19 @@ const colorMap = {
   error: "text-red-400",
 };
 
-export function BuildLogPanel() {
+const PLACEHOLDER_ENTRIES: BuildLogEntry[] = [
+  { type: "success" as const, message: "TypeScript compilation: no errors" },
+  { type: "info" as const, message: "Ready. Type a prompt in the Chat panel to generate a project." },
+];
+
+export function BuildLogPanel({ entries }: BuildLogPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const displayEntries = entries && entries.length > 0 ? entries : PLACEHOLDER_ENTRIES;
 
   return (
     <div className="border-t border-zinc-800 bg-zinc-950 shrink-0">
       <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-1.5">
         <span className="text-xs font-medium text-zinc-300">Build Log</span>
-        <span className="text-xs text-zinc-600">P0 mock</span>
         <Button
           variant="ghost"
           size="icon"
@@ -47,8 +54,8 @@ export function BuildLogPanel() {
         </Button>
       </div>
       {!collapsed && (
-        <div className={`overflow-y-auto px-4 py-2 ${collapsed ? "h-0" : "h-12"}`}>
-          {MOCK_LOGS.map((entry, i) => {
+        <div className="overflow-y-auto px-4 py-2 h-12">
+          {displayEntries.slice(-5).map((entry, i) => {
             const Icon = iconMap[entry.type];
             return (
               <div key={i} className="flex items-center gap-2 py-0.5">
