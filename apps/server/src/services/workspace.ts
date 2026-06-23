@@ -4,10 +4,49 @@ import { logger } from "../lib/logger.js";
 
 const WORKSPACES_ROOT = path.resolve(process.cwd(), "../../workspaces");
 
+/**
+ * Validate that a path component does not attempt directory traversal.
+ * Rejects: "..", ".", empty strings, and any string containing path separators.
+ */
+function isValidPathComponent(segment: string): boolean {
+  if (!segment || segment.length === 0) return false;
+  if (segment === "." || segment === "..") return false;
+  if (segment.includes("/") || segment.includes("\\")) return false;
+  return true;
+}
+
+/**
+ * Sanitize a projectId: must be a single safe directory name.
+ * Pattern: alphanumeric + underscore + hyphen, max 64 chars.
+ */
+export function validateProjectId(projectId: string): boolean {
+  return /^[a-zA-Z0-9_-]{1,64}$/.test(projectId) && isValidPathComponent(projectId);
+}
+
+/**
+ * Sanitize a file path: each segment must be safe, no absolute paths,
+ * no directory traversal.
+ */
+export function validateFilePath(filePath: string): boolean {
+  if (!filePath || filePath.length === 0) return false;
+  if (path.isAbsolute(filePath)) return false;
+  // Split on both forward and backslash, check each segment
+  const segments = filePath.replace(/\\/g, "/").split("/");
+  return segments.every(isValidPathComponent);
+}
+
 export async function ensureWorkspaceDir(projectId: string): Promise<string> {
+  if (!validateProjectId(projectId)) {
+    throw new Error(`Invalid projectId: "${projectId}". Must be alphanumeric (max 64 chars).`);
+  }
   const dir = path.join(WORKSPACES_ROOT, projectId, "current");
-  await mkdir(dir, { recursive: true });
-  return dir;
+  const resolved = path.resolve(dir);
+  // Safety: resolved path must still be within WORKSPACES_ROOT
+  if (!resolved.startsWith(WORKSPACES_ROOT)) {
+    throw new Error(`Path traversal detected: "${projectId}"`);
+  }
+  await mkdir(resolved, { recursive: true });
+  return resolved;
 }
 
 export async function writeProjectFiles(
@@ -17,7 +56,16 @@ export async function writeProjectFiles(
   const baseDir = await ensureWorkspaceDir(projectId);
 
   for (const file of files) {
-    const filePath = path.join(baseDir, file.path);
+    if (!validateFilePath(file.path)) {
+      throw new Error(
+        `Invalid file path: "${file.path}". Directory traversal or invalid characters detected.`
+      );
+    }
+    const filePath = path.resolve(baseDir, file.path);
+    // Safety: file must be within the project workspace
+    if (!filePath.startsWith(baseDir)) {
+      throw new Error(`Path traversal detected in file: "${file.path}"`);
+    }
     await mkdir(path.dirname(filePath), { recursive: true });
     await writeFile(filePath, file.content, "utf-8");
     logger.debug(`Wrote: ${filePath}`);
@@ -54,6 +102,6 @@ export async function listProjectFiles(
 }
 
 export async function getProjectName(projectId: string): Promise<string> {
-  // P0: derive name from projectId
+  // P0.5: derive name from projectId
   return `Project ${projectId.slice(0, 8)}`;
 }

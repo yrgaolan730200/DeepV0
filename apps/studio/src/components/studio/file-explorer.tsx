@@ -4,38 +4,45 @@ import { File, Folder, FolderOpen, ChevronRight, ChevronDown } from "lucide-reac
 import { useState } from "react";
 
 // P0: mock file tree
-const MOCK_FILES = [
+interface FileTreeItemData {
+  name: string;
+  type: "file" | "folder";
+  active?: boolean;
+  children?: FileTreeItemData[];
+}
+
+const MOCK_FILES: FileTreeItemData[] = [
   {
     name: "app",
-    type: "folder" as const,
+    type: "folder",
     children: [
-      { name: "globals.css", type: "file" as const },
-      { name: "layout.tsx", type: "file" as const },
-      { name: "page.tsx", type: "file" as const, active: true },
+      { name: "globals.css", type: "file" },
+      { name: "layout.tsx", type: "file" },
+      { name: "page.tsx", type: "file", active: true },
     ],
   },
   {
     name: "components",
-    type: "folder" as const,
+    type: "folder",
     children: [
-      { name: "ui", type: "folder" as const, children: [
-        { name: "button.tsx", type: "file" as const },
-        { name: "card.tsx", type: "file" as const },
-        { name: "badge.tsx", type: "file" as const },
-        { name: "input.tsx", type: "file" as const },
+      { name: "ui", type: "folder", children: [
+        { name: "button.tsx", type: "file" },
+        { name: "card.tsx", type: "file" },
+        { name: "badge.tsx", type: "file" },
+        { name: "input.tsx", type: "file" },
       ]},
     ],
   },
   {
     name: "lib",
-    type: "folder" as const,
+    type: "folder",
     children: [
-      { name: "utils.ts", type: "file" as const },
+      { name: "utils.ts", type: "file" },
     ],
   },
 ];
 
-function FileTreeItem({ item, depth = 0 }: { item: (typeof MOCK_FILES)[number]; depth?: number }) {
+function FileTreeItem({ item, depth = 0 }: { item: FileTreeItemData; depth?: number }) {
   const [expanded, setExpanded] = useState(true);
 
   if (item.type === "folder" && item.children) {

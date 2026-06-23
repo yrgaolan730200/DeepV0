@@ -34,11 +34,14 @@ export async function buildApp() {
   await app.register(reviseRoutes);
 
   // Global error handler
-  app.setErrorHandler((error, _request, reply) => {
+  app.setErrorHandler((err, _request, reply) => {
+    const error = err as { statusCode?: number; message?: string };
     app.log.error(error);
-    reply.status(error.statusCode ?? 500).send({
-      error: error.message,
-      statusCode: error.statusCode ?? 500,
+    const statusCode = error.statusCode ?? 500;
+    const message = error.message ?? "Internal server error";
+    reply.status(statusCode).send({
+      error: message,
+      statusCode,
     });
   });
 
