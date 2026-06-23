@@ -81,22 +81,22 @@ export const VSeekConfigSchema = z.object({
     maxTokens: z.number().int().min(1).max(65536).default(4096),
     maxRetries: z.number().int().min(0).max(10).default(3),
     baseURL: z.string().url().default("https://api.deepseek.com"),
-  }),
+  }).default({}),
   server: z.object({
     port: z.number().int().default(3001),
     host: z.string().default("0.0.0.0"),
-  }),
+  }).default({}),
   studio: z.object({
     port: z.number().int().default(3000),
     host: z.string().default("localhost"),
-  }),
+  }).default({}),
   workspaces: z.object({
     dir: z.string().default("./workspaces"),
-  }),
+  }).default({}),
   components: z.object({
     preInstalled: z.array(z.string()).default([]),
     importAlias: z.string().default("@/components/ui"),
-  }),
+  }).default({}),
 });
 
 export const DEFAULT_CONFIG = VSeekConfigSchema.parse({});
