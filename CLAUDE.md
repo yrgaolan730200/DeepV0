@@ -64,6 +64,27 @@ See `apps/server/src/routes/generate.ts` for the canonical example.
 
 All 6 studio panels in `apps/studio/src/components/studio/` are currently mock placeholders. They are self-contained `"use client"` components with static data. In P1, panels should be wired to real server API calls — the `useServerHealth` hook in `apps/studio/src/hooks/use-server-health.ts` is the reference pattern for polling the server.
 
+## Git 提交规范
+
+本项目所有 git commit message 必须使用中文大白话，不使用英文 Conventional Commit。
+
+正确示例：
+- 搭好 P0 的前后端骨架
+- 接入 DeepSeek，生成项目文件
+- 让 Studio 显示真实文件树和代码
+
+错误示例：
+- chore: establish P0 skeleton
+- feat: implement DeepSeek generation
+
+规则：
+- commit message 短、清楚、像人话，优先说明"这次做了什么"
+- 不要使用 chore/feat/fix/docs/refactor/test 等英文前缀
+- 分支名和 tag 名可以继续用英文，但二者不要完全相同（避免 git push refspec 歧义）
+- 提交前运行 `pnpm typecheck && pnpm build` 确保通过
+
+详见 `docs/GIT_CONVENTIONS.md`。
+
 ## Current Phase
 
-P0.5 (stable skeleton) is complete and merged to `main`. All generation routes return stubs. No real DeepSeek calls, no compilation checks, no live preview. The next phase is P1 — see `docs/ROADMAP.md` for the full plan.
+P1 (DeepSeek generation) is complete on branch `p1-deepseek-generation`. Studio can generate real projects via DeepSeek API and display file trees + code. No live preview yet. See `docs/ROADMAP.md` for the full plan.
